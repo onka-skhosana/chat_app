@@ -1,0 +1,69 @@
+<project name="LoginProject" default="rebuild" basedir=".">
+
+    <!-- Directories -->
+    <property name="src.dir" value="src"/>
+    <property name="test.dir" value="test"/>
+    <property name="build.dir" value="build"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="reports.dir" value="reports"/>
+    <property name="dist.dir" value="dist"/>
+
+    <!-- Classpath for compiling and running -->
+    <path id="classpath">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- Clean build -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${reports.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <!-- Compile main source code -->
+    <target name="compile">
+        <mkdir dir="${build.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${build.dir}" includeantruntime="false" classpathref="classpath"/>
+    </target>
+
+    <!-- Compile test code (if any) -->
+    <target name="compile-tests" depends="compile">
+        <mkdir dir="${build.dir}/test"/>
+        <javac srcdir="${test.dir}" destdir="${build.dir}/test" includeantruntime="false" classpath="${build.dir}:${lib.dir}/*"/>
+    </target>
+
+    <!-- Run JUnit tests (optional) -->
+    <target name="test" depends="compile-tests">
+        <mkdir dir="${reports.dir}"/>
+        <junit printsummary="yes" haltonfailure="yes">
+            <classpath>
+                <path refid="classpath"/>
+                <pathelement location="${build.dir}"/>
+                <pathelement location="${build.dir}/test"/>
+            </classpath>
+            <batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${test.dir}">
+                    <include name="**/*Test.java"/>
+                </fileset>
+            </batchtest>
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+        </junit>
+    </target>
+
+    <!-- Build runnable JAR -->
+    <target name="jar" depends="compile">
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${dist.dir}/LoginProject.jar" basedir="${build.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="login.Login"/>
+                <attribute name="Class-Path" value="lib/*"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- Rebuild everything -->
+    <target name="rebuild" depends="clean,jar"/>
+</project>
